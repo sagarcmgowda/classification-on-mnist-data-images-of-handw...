@@ -16,3 +16,4 @@ if file:
 
     pred = model.predict(img)
     st.write("Prediction:", np.argmax(pred))
+
