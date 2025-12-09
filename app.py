@@ -13,18 +13,54 @@ def load_model():
 
 model = load_model()
 
-uploaded_file = st.file_uploader("Upload a handwritten digit image", type=["png", "jpg", "jpeg"])
+# ---------------------------
+# Input method selector
+# ---------------------------
+option = st.radio(
+    "Select input method:",
+    ("Upload Image", "Capture from Camera")
+)
 
-if uploaded_file:
-    img = Image.open(uploaded_file).convert("L").resize((28, 28))
+image = None
+
+# ---------------------------
+# Upload image
+# ---------------------------
+if option == "Upload Image":
+    uploaded_file = st.file_uploader(
+        "Upload a handwritten digit image",
+        type=["png", "jpg", "jpeg"]
+    )
+    if uploaded_file:
+        image = Image.open(uploaded_file)
+
+# ---------------------------
+# Camera input
+# ---------------------------
+elif option == "Capture from Camera":
+    camera_image = st.camera_input("Capture handwritten digit")
+    if camera_image:
+        image = Image.open(camera_image)
+
+# ---------------------------
+# Prediction logic
+# ---------------------------
+if image:
+    # Preprocess
+    img = image.convert("L").resize((28, 28))
     img = np.array(img)
+
+    # Invert colors (important for MNIST)
     img = 255 - img
+
     img = img.reshape(1, 784).astype("float32") / 255.0
 
+    # Predict
     prediction = model.predict(img)
     digit = np.argmax(prediction)
     confidence = np.max(prediction)
 
-    st.image(uploaded_file, caption="Uploaded Image", width=150)
+    # Display
+    st.image(image, caption="Input Image", width=200)
     st.success(f"Prediction: **{digit}**")
     st.write(f"Confidence: **{confidence:.2%}**")
